@@ -303,6 +303,9 @@ private:
   // process options from configuration
   void processOptions();
 
+  // apply the per computer key remapping to a key event
+  void applyKeyRemap(const BaseClientProxy *client, KeyID &id, KeyModifierMask &mask) const;
+
   // event handlers
   void handleShapeChanged(BaseClientProxy *client);
   void handleClipboardGrabbed(const Event &event, BaseClientProxy *client);

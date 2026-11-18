@@ -1078,6 +1078,29 @@ void Server::sendOptions(BaseClientProxy *client) const
   client->setOptions(optionsList);
 }
 
+void Server::applyKeyRemap(const BaseClientProxy *client, KeyID &id, KeyModifierMask &mask) const
+{
+  // the primary computer is this computer, its keys are typed on the computer
+  // that holds them and are not remapped
+  if (client == m_primaryClient) {
+    return;
+  }
+
+  const auto *keyRemap = m_config->getKeyRemap(getName(client));
+  if (keyRemap == nullptr || keyRemap->empty()) {
+    return;
+  }
+
+  const auto remappedId = keyRemap->remapKey(id);
+  const auto remappedMask = keyRemap->remapMask(mask);
+  if (remappedId != id) {
+    LOG_VERBOSE("remap key id=%d to id=%d for \"%s\"", id, remappedId, getName(client).c_str());
+  }
+
+  id = remappedId;
+  mask = remappedMask;
+}
+
 void Server::processOptions()
 {
   const Config::ScreenOptions *options = m_config->getOptions("");
@@ -1539,7 +1562,10 @@ void Server::onKeyDown(KeyID id, KeyModifierMask mask, KeyButton button, const s
 
   // relay
   if (!m_keyboardBroadcasting && IKeyState::KeyInfo::isDefault(computers)) {
-    m_active->keyDown(id, mask, button, lang);
+    KeyID remappedId = id;
+    KeyModifierMask remappedMask = mask;
+    applyKeyRemap(m_active, remappedId, remappedMask);
+    m_active->keyDown(remappedId, remappedMask, button, lang);
   } else {
     if (!computers && m_keyboardBroadcasting) {
       computers = m_keyboardBroadcastingComputers.c_str();
@@ -1549,7 +1575,10 @@ void Server::onKeyDown(KeyID id, KeyModifierMask mask, KeyButton button, const s
     }
     for (ClientList::const_iterator index = m_clients.begin(); index != m_clients.end(); ++index) {
       if (IKeyState::KeyInfo::contains(computers, index->first)) {
-        index->second->keyDown(id, mask, button, lang);
+        KeyID remappedId = id;
+        KeyModifierMask remappedMask = mask;
+        applyKeyRemap(index->second, remappedId, remappedMask);
+        index->second->keyDown(remappedId, remappedMask, button, lang);
       }
     }
   }
@@ -1562,7 +1591,10 @@ void Server::onKeyUp(KeyID id, KeyModifierMask mask, KeyButton button, const cha
 
   // relay
   if (!m_keyboardBroadcasting && IKeyState::KeyInfo::isDefault(computers)) {
-    m_active->keyUp(id, mask, button);
+    KeyID remappedId = id;
+    KeyModifierMask remappedMask = mask;
+    applyKeyRemap(m_active, remappedId, remappedMask);
+    m_active->keyUp(remappedId, remappedMask, button);
   } else {
     if (!computers && m_keyboardBroadcasting) {
       computers = m_keyboardBroadcastingComputers.c_str();
@@ -1572,7 +1604,10 @@ void Server::onKeyUp(KeyID id, KeyModifierMask mask, KeyButton button, const cha
     }
     for (ClientList::const_iterator index = m_clients.begin(); index != m_clients.end(); ++index) {
       if (IKeyState::KeyInfo::contains(computers, index->first)) {
-        index->second->keyUp(id, mask, button);
+        KeyID remappedId = id;
+        KeyModifierMask remappedMask = mask;
+        applyKeyRemap(index->second, remappedId, remappedMask);
+        index->second->keyUp(remappedId, remappedMask, button);
       }
     }
   }
@@ -1587,7 +1622,10 @@ void Server::onKeyRepeat(KeyID id, KeyModifierMask mask, int32_t count, KeyButto
   assert(m_active != nullptr);
 
   // relay
-  m_active->keyRepeat(id, mask, count, button, lang);
+  KeyID remappedId = id;
+  KeyModifierMask remappedMask = mask;
+  applyKeyRemap(m_active, remappedId, remappedMask);
+  m_active->keyRepeat(remappedId, remappedMask, count, button, lang);
 }
 
 void Server::onMouseDown(ButtonID id)

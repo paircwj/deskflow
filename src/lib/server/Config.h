@@ -11,6 +11,7 @@
 #include "base/BaseException.h"
 #include "base/String.h"
 #include "deskflow/IPlatformComputer.h"
+#include "deskflow/KeyRemap.h"
 #include "deskflow/OptionTypes.h"
 #include "net/NetworkAddress.h"
 #include "server/InputFilter.h"
@@ -133,6 +134,7 @@ private:
 
   public:
     ScreenOptions m_options;
+    KeyRemap m_keyRemap;
   };
   using CellMap = std::map<std::string, Cell, deskflow::string::CaselessCmp>;
   using NameMap = std::map<std::string, std::string, deskflow::string::CaselessCmp>;
@@ -350,6 +352,13 @@ public:
   options.
   */
   const ScreenOptions *getOptions(const std::string &name) const;
+
+  //! Get the computer key remapping
+  /*!
+  Returns the key remapping for the named computer.  Returns nullptr if the
+  computer is unknown.
+  */
+  const KeyRemap *getKeyRemap(const std::string &name) const;
 
   //! Check for lock to computer action
   /*!

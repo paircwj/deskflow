@@ -168,6 +168,7 @@ Each computer will have a section where its configuration will be stored, if the
 | halfDuplexCapsLock     | `true` or `false` | This computer has a ''Caps Lock'' key that doesn't report a press and a release event when the user presses it but instead reports a press event when it's turned on and a release event when it's turned off. If ''Caps Lock'' acts strangely on all computers then you may need to set this option to true on the server. If it acts strangely on one computer then that computer may need the option set to true.|
 | halfDuplexNumLock      | `true` or `false` | This computer has a ''Num Lock'' key that doesn't report a press and a release event when the user presses it but instead reports a press event when it's turned on and a release event when it's turned off. If ''Num Lock'' acts strangely on all computers then you may need to set this option to true on the server. If it acts strangely on one computer then that computer may need the option set to true.|
 | halfDuplexScrollLock   | `true` or `false` | This computer has a ''Scroll Lock'' key that doesn't report a press and a release event when the user presses it but instead reports a press event when it's turned on and a release event when it's turned off. If ''Scroll Lock'' acts strangely on all computers then you may need to set this option to true on the server. If it acts strangely on one computer then that computer may need the option set to true.|
+| keyRemap               | Comma separated list of `from=to` key names | Remaps the keys this computer receives from the server. See [Key remapping](#key-remapping) for the accepted names and examples. |
 | modifierAlt             | `shift` `ctrl` `alt` `altgr` `meta` `super` or  `none` | Map the server's alt modifer to different key on this computer|
 | modifierAltGr           | `shift` `ctrl` `alt` `altgr` `meta` `super` or  `none` | Map the server's altgr modifer to different key on this computer|
 | modifierCtrl            | `shift` `ctrl` `alt` `altgr` `meta` `super` or  `none` | Map the server's ctrl modifer to different key on this computer|
@@ -181,6 +182,36 @@ Each computer will have a section where its configuration will be stored, if the
 | switchCornerBottomRight| `true` or `false` | Deskflow won't switch computers when the mouse reaches the edge of the computer if it includes this corner. The size of the corner is given by the `switchCornerSize` option. |
 | xtestIsXineramaUnaware | `true` or `false` | This option works around a bug in the XTest extension when used in combination with Xinerama. It affects X11 clients only. Not all versions of the XTest extension are aware of the Xinerama extension. As a result, they do not move the mouse correctly when using multiple Xinerama screens. This option is currently ''true'' by default. If you know your XTest extension is Xinerama aware then set this option to ''false''.|
 | weakX11Focus           | `true` or `false` | This X11 Client will not gain focus until an input event has been processed its any of its screens |
+
+#### Key remapping
+<a id="key-remapping"></a>
+
+`keyRemap` changes the keys the server sends to this computer. Each entry is `from=to` and entries are separated by commas. Both names are either a key name from the [Keynames](#keynames) list or one of the modifier names `shift`, `ctrl`, `alt`, `altgr`, `meta` or `super`. A modifier name covers both sides of the modifier, a key name like `Control_R` covers a single key.
+
+Remapping a modifier also remaps the modifier state, so key combinations keep working. Remapping `ctrl` to `super` makes ''ctrl+c'' arrive as ''super+c''. Lock and toggle keys, e.g. ''Caps Lock'', keep their state.
+
+To make the ctrl keys of the server act as the ''Command'' key on a macOS computer, add this to the general config, e.g. `~/.config/Deskflow/Deskflow.conf`:
+
+```
+[computer_mac]
+keyRemap=ctrl=super
+```
+
+''Command'' is `super` on macOS, `kKeySuper` is mapped to the Command key. To exchange ctrl and alt on a computer, map each direction separately:
+
+```
+[computer_linux]
+keyRemap=ctrl=alt, alt=ctrl
+```
+
+A single key is mapped with its key name, e.g. `keyRemap=CapsLock=Escape`. Key names cover one key only, so mapping both sides of a modifier with key names needs an entry per side:
+
+```
+[computer_linux]
+keyRemap=Control_L=Alt_L, Control_R=Alt_R, Alt_L=Control_L, Alt_R=Control_R
+```
+
+The remap is applied by the server before the key is sent to this computer and is read when the server configuration is loaded, so restart the Deskflow core after a change. A modifier that is mapped to a key that is not a modifier no longer sets a modifier bit. The GUI does not write this option yet, add it to the file by hand. When a `modifier*` option is set as well, the key remap is applied first on the server and the modifier map second on the computer.
 
 ### InternalConfig
 

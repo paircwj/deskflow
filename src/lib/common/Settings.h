@@ -127,6 +127,7 @@ public:
   struct Computer
   {
     inline static const auto Aliases = QStringLiteral("computer_%1/aliases");
+    inline static const auto KeyRemap = QStringLiteral("computer_%1/keyRemap");
     inline static const auto Name = QStringLiteral("computer_%1/name");
     inline static const auto HalfDuplexCapsLock = QStringLiteral("computer_%1/halfDuplexCapsLock");
     inline static const auto HalfDuplexNumLock = QStringLiteral("computer_%1/halfDuplexNumLock");

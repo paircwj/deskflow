@@ -118,6 +118,28 @@ bool Config::addComputer(const std::string &name)
     superModifier = kModifierNameSuper;
   addOption(name, kOptionModifierMapForSuper, modifierIDValueFromString(superModifier));
 
+  // remap entries are `from=to' and may be separated by commas so that the
+  // value is easy to edit by hand in the general config
+  QStringList mappings;
+  const auto remapEntries = Settings::value(Settings::Computer::KeyRemap.arg(computer)).toStringList();
+  for (const auto &entry : remapEntries) {
+    mappings.append(entry.split(QLatin1Char(','), Qt::SkipEmptyParts));
+  }
+
+  for (const auto &mapping : mappings) {
+    const auto parts = mapping.split(QLatin1Char('='));
+    if (parts.size() != 2) {
+      qWarning() << "ignoring key remap" << mapping << "for computer" << computer;
+      continue;
+    }
+
+    const auto from = parts.at(0).trimmed().toStdString();
+    const auto to = parts.at(1).trimmed().toStdString();
+    if (!m_map.at(name).m_keyRemap.addMapping(from, to)) {
+      qWarning() << "ignoring key remap" << mapping << "for computer" << computer;
+    }
+  }
+
   return true;
 }
 
@@ -385,6 +407,16 @@ const Config::ScreenOptions *Config::getOptions(const std::string &name) const
 
   // return options
   return options;
+}
+
+const KeyRemap *Config::getKeyRemap(const std::string &name) const
+{
+  CellMap::const_iterator index = m_map.find(name);
+  if (index == m_map.end()) {
+    return nullptr;
+  }
+
+  return &index->second.m_keyRemap;
 }
 
 bool Config::hasLockToComputerAction() const
@@ -1203,6 +1235,11 @@ bool Config::Cell::operator==(const Cell &x) const
 {
   // compare options
   if (m_options != x.m_options) {
+    return false;
+  }
+
+  // compare key remapping
+  if (!(m_keyRemap == x.m_keyRemap)) {
     return false;
   }
 

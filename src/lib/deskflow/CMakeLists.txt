@@ -61,6 +61,8 @@ add_library(${lib_name} STATIC ${PLATFORM_CODE}
   KeyTypes.h
   KeyMap.cpp
   KeyMap.h
+  KeyRemap.cpp
+  KeyRemap.h
   KeyState.cpp
   KeyState.h
   MouseTypes.h
